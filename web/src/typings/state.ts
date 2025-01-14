@@ -1,4 +1,4 @@
-import { Inventory } from './inventory';
+import { IClothingInventory, Inventory } from './inventory';
 import { Slot } from './slot';
 
 export type State = {
@@ -11,5 +11,8 @@ export type State = {
   history?: {
     leftInventory: Inventory;
     rightInventory: Inventory;
+    clothing: IClothingInventory;
   };
+  showClothing: boolean;
+  clothing: IClothingInventory;
 };

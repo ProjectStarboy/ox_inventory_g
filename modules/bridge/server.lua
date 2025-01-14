@@ -45,14 +45,19 @@ function server.playerDropped(source)
 	if inv?.player then
 		inv:closeInventory()
 		Inventory.Remove(inv)
+		local clothing = inv.clothing
+		if clothing then
+			clothing:closeInventory()
+			Inventory.Remove(clothing)
+		end
 	end
 end
 
 local success, result = pcall(lib.load, ('modules.bridge.%s.server'):format(shared.framework))
 
 if not success then
-    lib = nil
-    error(result, 0)
+	lib = nil
+	error(result, 0)
 end
 
 if server.convertInventory then exports('ConvertItems', server.convertInventory) end

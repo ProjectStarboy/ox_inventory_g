@@ -22,13 +22,19 @@ export const refreshSlotsReducer: CaseReducer<State, PayloadAction<Payload>> = (
       .filter((data) => !!data)
       .forEach((data) => {
         const targetInventory = data.inventory
-          ? data.inventory !== InventoryType.PLAYER
+          ? data.inventory === InventoryType.CLOTHING
+            ? state.clothing
+            : data.inventory !== InventoryType.PLAYER
             ? state.rightInventory
             : state.leftInventory
           : state.leftInventory;
 
         data.item.durability = itemDurability(data.item.metadata, curTime);
-        targetInventory.items[data.item.slot - 1] = data.item;
+        if (data.inventory === InventoryType.CLOTHING) {
+          targetInventory.items[data.item.slot - 1] = data.item;
+        } else {
+          targetInventory.items[data.item.slot - 1] = data.item;
+        }
       });
 
     // Janky workaround to force a state rerender for crafting inventory to

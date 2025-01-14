@@ -4,7 +4,7 @@ import { Items } from './store/items';
 import { Locale } from './store/locale';
 import { setImagePath } from './store/imagepath';
 import { setupInventory } from './store/inventory';
-import { Inventory } from './typings';
+import { Inventory, Slot } from './typings';
 import { useAppDispatch } from './store';
 import { debugData } from './utils/debugData';
 import DragPreview from './components/utils/DragPreview';
@@ -57,6 +57,23 @@ debugData([
               imageurl: 'https://i.imgur.com/2xHhTTz.png',
             },
           },
+          {
+            name: 'clothing',
+            weight: 0,
+            close: true,
+            stack: true,
+            metadata: {
+              imageurl: 'https://sp.lorax.vn/storage/v1/object/public/ps-clothes/female_component_11_0_12.png',
+              componentType: 'component',
+              gender: 'male',
+              textureId: 0,
+              componentId: 11,
+              drawableId: 1,
+            },
+            count: 1,
+            label: 'Clothing',
+            slot: 21,
+          },
         ],
       },
       rightInventory: {
@@ -83,6 +100,25 @@ debugData([
           },
         ],
       },
+      clothingItems: {
+        '11': {
+          metadata: {
+            textureId: 0,
+            drawableId: 1,
+            gender: 'male',
+            imageurl: 'https://sp.lorax.vn/storage/v1/object/public/ps-clothes/female_component_11_0_12.png',
+            componentType: 'component',
+            componentId: 11,
+          },
+          close: true,
+          name: 'clothing',
+          stack: true,
+          label: 'Clothing',
+          count: 1,
+          slot: 11,
+          weight: 0,
+        },
+      },
     },
   },
 ]);
@@ -96,12 +132,13 @@ const App: React.FC = () => {
     items: typeof Items;
     leftInventory: Inventory;
     imagepath: string;
-  }>('init', ({ locale, items, leftInventory, imagepath }) => {
+    clothingItems: Slot[];
+  }>('init', ({ locale, items, leftInventory, imagepath, clothingItems }) => {
     for (const name in locale) Locale[name] = locale[name];
     for (const name in items) Items[name] = items[name];
 
     setImagePath(imagepath);
-    dispatch(setupInventory({ leftInventory }));
+    dispatch(setupInventory({ leftInventory, clothingItems: clothingItems }));
   });
 
   fetchNui('uiLoaded', {});
@@ -119,8 +156,8 @@ const App: React.FC = () => {
   );
 };
 
-addEventListener("dragstart", function(event) {
-  event.preventDefault()
-})
+addEventListener('dragstart', function (event) {
+  event.preventDefault();
+});
 
 export default App;

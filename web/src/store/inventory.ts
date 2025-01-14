@@ -7,7 +7,7 @@ import {
   stackSlotsReducer,
   swapSlotsReducer,
 } from '../reducers';
-import { State } from '../typings';
+import { InventoryType, State } from '../typings';
 
 const initialState: State = {
   leftInventory: {
@@ -28,6 +28,13 @@ const initialState: State = {
   itemAmount: 0,
   shiftPressed: false,
   isBusy: false,
+  showClothing: true,
+  clothing: {
+    id: 'clothing',
+    type: InventoryType.CLOTHING,
+    slots: 12,
+    items: [],
+  },
 };
 
 export const inventorySlice = createSlice({
@@ -62,6 +69,9 @@ export const inventorySlice = createSlice({
 
       container.weight = action.payload;
     },
+    setShowClothing: (state, action: PayloadAction<boolean>) => {
+      state.showClothing = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(isPending, (state) => {
@@ -70,6 +80,7 @@ export const inventorySlice = createSlice({
       state.history = {
         leftInventory: current(state.leftInventory),
         rightInventory: current(state.rightInventory),
+        clothing: current(state.clothing),
       };
     });
     builder.addMatcher(isFulfilled, (state) => {
@@ -79,6 +90,7 @@ export const inventorySlice = createSlice({
       if (state.history && state.history.leftInventory && state.history.rightInventory) {
         state.leftInventory = state.history.leftInventory;
         state.rightInventory = state.history.rightInventory;
+        state.clothing = state.history.clothing;
       }
       state.isBusy = false;
     });
@@ -95,10 +107,13 @@ export const {
   stackSlots,
   refreshSlots,
   setContainerWeight,
+  setShowClothing,
 } = inventorySlice.actions;
 export const selectLeftInventory = (state: RootState) => state.inventory.leftInventory;
 export const selectRightInventory = (state: RootState) => state.inventory.rightInventory;
 export const selectItemAmount = (state: RootState) => state.inventory.itemAmount;
 export const selectIsBusy = (state: RootState) => state.inventory.isBusy;
+export const selectShowClothing = (state: RootState) => state.inventory.showClothing;
+export const selectClothing = (state: RootState) => state.inventory.clothing;
 
 export default inventorySlice.reducer;

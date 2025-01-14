@@ -29,14 +29,24 @@ const InventoryHotbar: React.FC = () => {
       <div className="hotbar-container">
         {items.map((item) => (
           <div
-            className="hotbar-item-slot"
-            style={{
+            className="hotbar-item-slot rounded-lg relative flex justify-center items-center"
+            /* style={{
               backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
-            }}
+              backgroundSize: 'cover',
+            }} */
             key={`hotbar-${item.slot}`}
           >
+            <div
+              className="w-2/3 h-2/3 absolute"
+              style={{
+                backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            ></div>
             {isSlotWithItem(item) && (
-              <div className="item-slot-wrapper">
+              <div className="item-slot-wrapper w-full relative">
                 <div className="hotbar-slot-header-wrapper">
                   <div className="inventory-slot-number">{item.slot}</div>
                   <div className="item-slot-info-wrapper">
@@ -56,11 +66,11 @@ const InventoryHotbar: React.FC = () => {
                 </div>
                 <div>
                   {item?.durability !== undefined && <WeightBar percent={item.durability} durability />}
-                  <div className="inventory-slot-label-box">
+                  {/* <div className="inventory-slot-label-box w-full">
                     <div className="inventory-slot-label-text">
                       {item.metadata?.label ? item.metadata.label : Items[item.name]?.label || item.name}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}

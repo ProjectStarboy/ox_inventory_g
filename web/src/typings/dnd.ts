@@ -4,6 +4,7 @@ import { Slot, SlotWithItem } from './slot';
 export type DragSource = {
   item: Pick<SlotWithItem, 'slot' | 'name'>;
   inventory: Inventory['type'];
+  metadata?: any;
   image?: string;
 };
 

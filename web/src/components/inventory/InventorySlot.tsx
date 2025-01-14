@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DragSource, Inventory, InventoryType, Slot, SlotWithItem } from '../../typings';
 import { useDrag, useDragDropManager, useDrop } from 'react-dnd';
 import { useAppDispatch } from '../../store';
@@ -15,21 +15,28 @@ import { ItemsPayload } from '../../reducers/refreshSlots';
 import { closeTooltip, openTooltip } from '../../store/tooltip';
 import { openContextMenu } from '../../store/contextMenu';
 import { useMergeRefs } from '@floating-ui/react';
+import { useHover } from '@mantine/hooks';
+import classNames from 'classnames';
+import ItemRarity from './ItemRarity';
+import { Box } from 'lr-components';
 
 interface SlotProps {
   inventoryId: Inventory['id'];
   inventoryType: Inventory['type'];
   inventoryGroups: Inventory['groups'];
   item: Slot;
+  searching?: string;
+  locked?: boolean;
 }
 
 const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> = (
-  { item, inventoryId, inventoryType, inventoryGroups },
+  { item, inventoryId, inventoryType, inventoryGroups, searching, locked },
   ref
 ) => {
+  const { hovered, ref: hoverRef } = useHover();
   const manager = useDragDropManager();
   const dispatch = useAppDispatch();
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const canDrag = useCallback(() => {
     return canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) && canCraftItem(item, inventoryType);
@@ -49,6 +56,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
                 name: item.name,
                 slot: item.slot,
               },
+              metadata: item.metadata,
               image: item?.name && `url(${getItemUrl(item) || 'none'}`,
             }
           : null,
@@ -64,7 +72,9 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
         isOver: monitor.isOver(),
       }),
       drop: (source) => {
+        console.log('drop to inventory', source);
         dispatch(closeTooltip());
+        if (locked) return;
         switch (source.inventory) {
           case InventoryType.SHOP:
             onBuy(source, { inventory: inventoryType, item: { slot: item.slot } });
@@ -82,7 +92,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
         inventoryType !== InventoryType.SHOP &&
         inventoryType !== InventoryType.CRAFTING,
     }),
-    [inventoryType, item]
+    [inventoryType, item, locked]
   );
 
   useNuiEvent('refreshSlots', (data: { items?: ItemsPayload | ItemsPayload[] }) => {
@@ -102,6 +112,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
 
   const handleContext = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
+    console.log(item);
     if (inventoryType !== 'player' || !isSlotWithItem(item)) return;
 
     dispatch(openContextMenu({ item, coords: { x: event.clientX, y: event.clientY } }));
@@ -117,31 +128,108 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
     }
   };
 
-  const refs = useMergeRefs([connectRef, ref]);
+  const refs = useMergeRefs([connectRef, ref, hoverRef]);
+  const shouldRenderItem = useMemo(() => {
+    if (!item.name) return false;
+    if (searching) {
+      if (!item.name.toLowerCase().includes(searching.toLowerCase())) return false;
+    }
+    return true;
+  }, [item.name, Items, searching]);
+
+  const componentData:
+    | {
+        componentId: number;
+        drawableId: number;
+        textureId: number;
+        name: string;
+        gender: 'male' | 'female';
+      }
+    | undefined = useMemo(() => {
+    if (item.name) {
+      //male_component_11_12_0
+      const arg = item.name.split('_');
+      if (arg.length < 5) return;
+      return {
+        gender: arg[0] as 'male' | 'female',
+        componentId: Number(arg[2]),
+        drawableId: Number(arg[3]),
+        textureId: Number(arg[4]),
+        name: item.name,
+      };
+    }
+  }, [item]);
 
   return (
-    <div
+    <Box
       ref={refs}
       onContextMenu={handleContext}
       onClick={handleClick}
       className="inventory-slot"
-      style={{
-        filter:
-          !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) || !canCraftItem(item, inventoryType)
-            ? 'brightness(80%) grayscale(100%)'
-            : undefined,
-        opacity: isDragging ? 0.4 : 1.0,
-        backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
-        border: isOver ? '1px dashed rgba(255,255,255,0.4)' : '',
-      }}
+      rWidth={88}
+      rHeight={88}
     >
-      {isSlotWithItem(item) && (
+      {componentData ? (
+        <div className="absolute w-full h-full flex items-center justify-center"></div>
+      ) : (
         <div
-          className="item-slot-wrapper"
+          className="absolute w-full h-full flex justify-center items-center"
+          style={{
+            backgroundImage: `url(${shouldRenderItem && item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '70% 70%',
+            backgroundPosition: 'center',
+          }}
+        >
+          {item.metadata?.fishQuality !== undefined && item.metadata?.fishQuality > 0 && (
+            <img
+              src={`https://supabase.lorraxs.dev/storage/v1/object/public/items/${
+                item.metadata.fishQuality === 1 ? 'silver' : item.metadata.fishQuality === 2 ? 'gold' : 'iridium'
+              }_quality_icon.png`}
+              className="absolute left-[10%] bottom-[20%] w-[50%] h-[50%]"
+            />
+          )}
+        </div>
+      )}
+
+      <div className="absolute top-0 left-0 w-full h-full flex inventory-slot-border">
+        <div
+          className={classNames('w-2/12 border-t border-l border-b border-white rounded-tl-md rounded-bl-md', {
+            'border-opacity-30': !hovered,
+          })}
+        ></div>
+        <div
+          className={classNames('w-4/12 border-b border-white relative flex justify-center items-center', {
+            'border-opacity-30': !hovered,
+          })}
+        >
+          <div className="item-slot-info ">
+            {locked ? (
+              <i
+                className={classNames('icon icon-lock', {
+                  'opacity-30': !hovered,
+                })}
+              />
+            ) : (
+              <p>{item.count}</p>
+            )}
+          </div>
+          {isSlotWithItem(item) && <ItemRarity item={item} />}
+        </div>
+        <div
+          className={classNames('w-6/12 border-b border-r border-t border-white rounded-tr-md rounded-br-md', {
+            'border-opacity-30': !hovered,
+          })}
+        ></div>
+      </div>
+      {isSlotWithItem(item) && shouldRenderItem && (
+        <div
+          className="item-slot-wrapper relative"
           onMouseEnter={() => {
-            timerRef.current = window.setTimeout(() => {
+            timerRef.current = setTimeout(() => {
+              console.log('tootip ', item);
               dispatch(openTooltip({ item, inventoryType }));
-            }, 500) as unknown as number;
+            }, 200);
           }}
           onMouseLeave={() => {
             dispatch(closeTooltip());
@@ -155,23 +243,7 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
             className={
               inventoryType === 'player' && item.slot <= 5 ? 'item-hotslot-header-wrapper' : 'item-slot-header-wrapper'
             }
-          >
-            {inventoryType === 'player' && item.slot <= 5 && <div className="inventory-slot-number">{item.slot}</div>}
-            <div className="item-slot-info-wrapper">
-              <p>
-                {item.weight > 0
-                  ? item.weight >= 1000
-                    ? `${(item.weight / 1000).toLocaleString('en-us', {
-                        minimumFractionDigits: 2,
-                      })}kg `
-                    : `${item.weight.toLocaleString('en-us', {
-                        minimumFractionDigits: 0,
-                      })}g `
-                  : ''}
-              </p>
-              <p>{item.count ? item.count.toLocaleString('en-us') + `x` : ''}</p>
-            </div>
-          </div>
+          ></div>
           <div>
             {inventoryType !== 'shop' && item?.durability !== undefined && (
               <WeightBar percent={item.durability} durability />
@@ -210,15 +282,10 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
                 )}
               </>
             )}
-            <div className="inventory-slot-label-box">
-              <div className="inventory-slot-label-text">
-                {item.metadata?.label ? item.metadata.label : Items[item.name]?.label || item.name}
-              </div>
-            </div>
           </div>
         </div>
       )}
-    </div>
+    </Box>
   );
 };
 
