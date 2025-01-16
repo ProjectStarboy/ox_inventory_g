@@ -15,6 +15,7 @@ export const Items: {
     name: 'burger',
     close: false,
     label: 'BURGR',
+    rarity: 'legendary',
     stack: false,
     usable: false,
     count: 0,

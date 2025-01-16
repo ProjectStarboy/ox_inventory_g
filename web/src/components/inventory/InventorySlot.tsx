@@ -72,7 +72,6 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
         isOver: monitor.isOver(),
       }),
       drop: (source) => {
-        console.log('drop to inventory', source);
         dispatch(closeTooltip());
         if (locked) return;
         switch (source.inventory) {
@@ -112,7 +111,6 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
 
   const handleContext = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
-    console.log(item);
     if (inventoryType !== 'player' || !isSlotWithItem(item)) return;
 
     dispatch(openContextMenu({ item, coords: { x: event.clientX, y: event.clientY } }));
@@ -172,23 +170,25 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       {componentData ? (
         <div className="absolute w-full h-full flex items-center justify-center"></div>
       ) : (
-        <div
-          className="absolute w-full h-full flex justify-center items-center"
-          style={{
-            backgroundImage: `url(${shouldRenderItem && item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '70% 70%',
-            backgroundPosition: 'center',
-          }}
-        >
-          {item.metadata?.fishQuality !== undefined && item.metadata?.fishQuality > 0 && (
-            <img
-              src={`https://supabase.lorraxs.dev/storage/v1/object/public/items/${
-                item.metadata.fishQuality === 1 ? 'silver' : item.metadata.fishQuality === 2 ? 'gold' : 'iridium'
-              }_quality_icon.png`}
-              className="absolute left-[10%] bottom-[20%] w-[50%] h-[50%]"
-            />
-          )}
+        <div className="absolute w-full h-full p-[10px] flex justify-center items-center">
+          <div
+            className=" w-full h-full "
+            style={{
+              backgroundImage: `url(${shouldRenderItem && item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+            }}
+          >
+            {item.metadata?.fishQuality !== undefined && item.metadata?.fishQuality > 0 && (
+              <img
+                src={`https://supabase.lorraxs.dev/storage/v1/object/public/items/${
+                  item.metadata.fishQuality === 1 ? 'silver' : item.metadata.fishQuality === 2 ? 'gold' : 'iridium'
+                }_quality_icon.png`}
+                className="absolute left-[10%] bottom-[20%] w-[50%] h-[50%]"
+              />
+            )}
+          </div>
         </div>
       )}
 
@@ -225,10 +225,25 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       {isSlotWithItem(item) && shouldRenderItem && (
         <div
           className="item-slot-wrapper relative"
-          onMouseEnter={() => {
+          onMouseEnter={(e) => {
+            const domRect = (e.target as HTMLDivElement).getBoundingClientRect();
             timerRef.current = setTimeout(() => {
-              console.log('tootip ', item);
-              dispatch(openTooltip({ item, inventoryType }));
+              dispatch(
+                openTooltip({
+                  item,
+                  inventoryType,
+                  domRect: {
+                    x: domRect.x,
+                    y: domRect.y,
+                    width: domRect.width,
+                    height: domRect.height,
+                    top: domRect.top,
+                    right: domRect.right,
+                    bottom: domRect.bottom,
+                    left: domRect.left,
+                  },
+                })
+              );
             }, 200);
           }}
           onMouseLeave={() => {

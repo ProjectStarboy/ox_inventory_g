@@ -6,7 +6,6 @@ import ClothingSlot from './ClothingSlot';
 
 const Clothing: React.FC = () => {
   const clothing = useAppSelector(selectClothing);
-  console.log(clothing);
   return (
     <div className="w-1/2 flex  relative">
       {/* <div className="clothing-slot-wrapper">

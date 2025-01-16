@@ -12,9 +12,10 @@ import { selectItemAmount, setItemAmount } from '../../store/inventory';
 
 const PAGE_SIZE = 30;
 
-const InventoryGrid: React.FC<{ inventory: Inventory; playerInventory?: boolean }> = ({
+const InventoryGrid: React.FC<{ inventory: Inventory; type?: 'POCKET' | 'BACKPACK'; maxHeight?: number }> = ({
   inventory,
-  playerInventory,
+  type,
+  maxHeight,
 }) => {
   const weight = useMemo(
     () => (inventory.maxWeight !== undefined ? Math.floor(getTotalWeight(inventory.items) * 1000) / 1000 : 0),
@@ -43,7 +44,7 @@ const InventoryGrid: React.FC<{ inventory: Inventory; playerInventory?: boolean 
   return (
     <>
       <Box className="inventory-grid-wrapper gap-4" pointerEvents={isBusy ? 'none' : 'all'}>
-        {!playerInventory && (
+        {!type && (
           <div className="flex items-center justify-end gap-4 inventory-header">
             <Text fontFamily="Roboto" rFontSize={18} opacity={0.8} textTransform="uppercase">
               {inventory.label}
@@ -52,6 +53,21 @@ const InventoryGrid: React.FC<{ inventory: Inventory; playerInventory?: boolean 
             <div className="flex  items-center gap-2">
               {inventory.maxWeight && (
                 <Text textWrap="nowrap" fontFamily="Roboto" className="min-w-24 text-right">
+                  <span className="text-xs">{(weight / 1000).toFixed(2)}/</span>{' '}
+                  <span className="font-normal text-base text-nowrap">{inventory.maxWeight / 1000} Kg</span>
+                </Text>
+              )}
+            </div>
+          </div>
+        )}
+        {type === 'BACKPACK' && (
+          <div className="flex">
+            <Text fontFamily="Roboto" rFontSize={18} opacity={0.8} textWrap="nowrap">
+              BA LÔ
+            </Text>
+            <div className="flex  items-center gap-2">
+              {inventory.maxWeight && (
+                <Text textWrap="nowrap" fontFamily="Roboto" className="min-w-24 text-right" opacity={0.8}>
                   <span className="text-xs">{(weight / 1000).toFixed(2)}/</span>{' '}
                   <span className="font-normal text-base text-nowrap">{inventory.maxWeight / 1000} Kg</span>
                 </Text>
@@ -211,7 +227,7 @@ const InventoryGrid: React.FC<{ inventory: Inventory; playerInventory?: boolean 
                   inventoryId={inventory.id}
                 />
               </div>
-              <div className="flex gap-[22px] w-full">
+              {/* <div className="flex gap-[22px] w-full">
                 <InventorySlot
                   item={inventory.items[17]}
                   inventoryType={inventory.type}
@@ -286,17 +302,14 @@ const InventoryGrid: React.FC<{ inventory: Inventory; playerInventory?: boolean 
                   inventoryGroups={inventory.groups}
                   inventoryId={inventory.id}
                 />
-              </div>
+              </div> */}
             </div>
-            <Text fontFamily="Roboto" rFontSize={18} opacity={0.8}>
-              BA LÔ
-            </Text>
           </>
         )}
         <Box
           className="inventory-grid-container pr-2"
           ref={containerRef}
-          rMaxHeight={playerInventory ? 220 : 730}
+          rMaxHeight={maxHeight ? maxHeight : 730}
           rGridTemplateColumns={[6, 88]}
         >
           <>

@@ -1705,17 +1705,37 @@ local activeSlots = {}
 ---@param source number
 ---@param data SwapSlotData
 lib.callback.register('ox_inventory:swapItems', function(source, data)
-	print(1708, json.encode(data))
 	if data.count < 1 then return end
 
 	local playerInventory = Inventory(source)
 
 	if not playerInventory then return end
+	local clothing = playerInventory.clothing
+	local backpackItem = clothing.items[5]
 
 	local toInventory = (data.toType == 'player' and playerInventory) or
 			(data.toType == "clothing" and playerInventory.clothing) or Inventory(playerInventory.open)
 	local fromInventory = (data.fromType == 'player' and playerInventory) or
 			(data.fromType == "clothing" and playerInventory.clothing) or Inventory(playerInventory.open)
+
+	if data.toType == "backpack" or data.fromType == "backpack" then
+		if not backpackItem then return end
+		backpackInv = Inventory(backpackItem.metadata.container)
+		if not backpackInv then
+			backpackInv = Inventory.Create(backpackItem.metadata.container, backpackItem.label, 'container',
+				backpackItem.metadata.size[1],
+				0,
+				backpackItem.metadata.size[2], false)
+		end
+		--[[ left:openInventory(backpackInv) ]]
+		if data.toType == "backpack" then
+			toInventory = backpackInv
+		end
+		if data.fromType == "backpack" then
+			fromInventory = backpackInv
+		end
+	end
+
 
 	if not fromInventory or not toInventory then
 		playerInventory:closeInventory()
@@ -1786,7 +1806,6 @@ lib.callback.register('ox_inventory:swapItems', function(source, data)
 		end
 
 		if data.toType == "clothing" then
-			print(1789, json.encode(fromData))
 			if not fromData.metadata then return end
 			local componentId = fromData.metadata.componentId
 			local drawableId = fromData.metadata.drawableId
@@ -1795,15 +1814,12 @@ lib.callback.register('ox_inventory:swapItems', function(source, data)
 			if not componentId or not drawableId or not textureId or not componentType then return end
 			local componentSlot = componentType == "component" and fromData.metadata.componentId or
 					fromData.metadata.componentId + 12
-			print(1797, componentId, drawableId, textureId, componentType, componentSlot)
 			if not componentId or not drawableId or not textureId or not componentType then return end
 			if fromData.name == "clothing" then
 				if data.toSlot ~= componentSlot then
-					print(1801, data.toSlot, componentSlot)
 					return
 				end
 			end
-			print(1801, "done")
 		end
 
 		if fromData then
@@ -2480,7 +2496,7 @@ local function saveInventories(clearInventories)
 	if not clearInventories then return end
 
 	for _, inv in pairs(Inventories) do
-		if not inv.open and not inv.player and inv.type ~= "clothing" then
+		if not inv.open and not inv.player and inv.type ~= "clothing" and inv.type ~= "backpack" then
 			-- clear inventory from memory if unused for x minutes, or on entity/netid mismatch
 			if inv.type == 'glovebox' or inv.type == 'trunk' then
 				if NetworkGetEntityFromNetworkId(inv.netid) ~= inv.entityId then

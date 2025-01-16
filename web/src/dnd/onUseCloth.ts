@@ -8,8 +8,6 @@ export const onUseCloth = (source: DragSource, target: DropTarget) => {
   const { inventory: state } = store.getState();
   const sourceInventory = state.leftInventory;
   const targetInventory = state.clothing;
-  console.log(target.item);
-  console.log(targetInventory.items);
   const sourceSlot = sourceInventory.items[source.item.slot - 1] as SlotWithItem;
   const targetSlot = targetInventory.items[(target.item.slot - 1) as IClothingSlot];
   const data = {
@@ -19,8 +17,6 @@ export const onUseCloth = (source: DragSource, target: DropTarget) => {
     toType: 'clothing',
     count: 1,
   };
-
-  console.log(data);
 
   store.dispatch(
     validateMove({

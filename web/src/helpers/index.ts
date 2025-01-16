@@ -103,12 +103,16 @@ export const getTargetInventory = (
       ? state.leftInventory
       : sourceType === InventoryType.CLOTHING
       ? state.clothing
+      : sourceType === InventoryType.BACKPACK
+      ? state.backpackInventory || state.rightInventory
       : state.rightInventory,
   targetInventory: targetType
     ? targetType === InventoryType.PLAYER
       ? state.leftInventory
       : targetType === InventoryType.CLOTHING
       ? state.clothing
+      : targetType === InventoryType.BACKPACK
+      ? state.backpackInventory || state.rightInventory
       : state.rightInventory
     : sourceType === InventoryType.PLAYER
     ? state.rightInventory

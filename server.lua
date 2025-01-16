@@ -4,6 +4,7 @@ require 'modules.bridge.server'
 require 'modules.crafting.server'
 require 'modules.shops.server'
 require 'modules.pefcl.server'
+require 'modules.clothe.server'
 
 if GetConvar('inventory:versioncheck', 'true') == 'true' then
 	lib.versionCheck('overextended/ox_inventory')
@@ -122,8 +123,10 @@ local function openInventory(source, invType, data, ignoreSecurityChecks)
 
 	if not left then return end
 	local clothing = left.clothing
+	local backpackItem = clothing.items[5]
 	left:closeInventory(true)
 	Inventory.CloseAll(left, source)
+
 
 	if invType == 'player' and data == source then
 		data = nil
@@ -258,6 +261,16 @@ local function openInventory(source, invType, data, ignoreSecurityChecks)
 	else
 		left:openInventory(left)
 	end
+	local backpackInv = nil
+	if backpackItem then
+		backpackInv = Inventory(backpackItem.metadata.container)
+		if not backpackInv then
+			backpackInv = Inventory.Create(backpackItem.metadata.container, backpackItem.label, 'container',
+				backpackItem.metadata.size[1],
+				0,
+				backpackItem.metadata.size[2], false)
+		end
+	end
 
 	return {
 		id = left.id,
@@ -267,6 +280,12 @@ local function openInventory(source, invType, data, ignoreSecurityChecks)
 		weight = left.weight,
 		maxWeight = left.maxWeight,
 		clothing = clothing.items,
+		backpack = backpackInv and {
+			slots = backpackInv.slots,
+			weight = backpackInv.weight,
+			maxWeight = backpackInv.maxWeight,
+			items = backpackInv.items,
+		}
 	}, right and {
 		id = right.id,
 		label = right.player and '' or right.label,

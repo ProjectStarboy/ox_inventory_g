@@ -58,7 +58,6 @@ const ClothingSlot: React.FC<Props> = ({ slot, inventoryType }, ref) => {
     data: monitor.getItem(),
   }));
   const item = clothing.items[slot - 1];
-  //console.log(data);
   const draggingComponent = useMemo(() => getComponentData(data?.metadata), [data?.metadata]);
   const { hovered, ref: hoverRef } = useHover();
 
@@ -99,11 +98,9 @@ const ClothingSlot: React.FC<Props> = ({ slot, inventoryType }, ref) => {
       }),
       drop: (source) => {
         dispatch(closeTooltip());
-        console.log('drop to clothing', slot, source);
         onUseCloth(source, { inventory: inventoryType, item: { slot: item.slot } });
       },
       canDrop: (source) => {
-        console.log('canDrop to clothing', slot, source);
         if (source.inventory !== InventoryType.PLAYER) return false;
         return true;
       },
@@ -143,21 +140,39 @@ const ClothingSlot: React.FC<Props> = ({ slot, inventoryType }, ref) => {
           </Text>
         </div>
       )}
-      <div
-        className="absolute w-full h-full flex justify-center items-center"
-        style={{
-          backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '70% 70%',
-          backgroundPosition: 'center',
-        }}
-      ></div>
+      <div className="absolute w-full h-full p-[10px] flex justify-center items-center">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+          }}
+        ></div>
+      </div>
       {isSlotWithItem(item) && (
         <div
           className="item-slot-wrapper absolute z-10 w-full h-full"
-          onMouseEnter={() => {
+          onMouseEnter={(e) => {
+            const domRect = (e.target as HTMLDivElement).getBoundingClientRect();
             timerRef.current = setTimeout(() => {
-              dispatch(openTooltip({ item, inventoryType }));
+              dispatch(
+                openTooltip({
+                  item,
+                  inventoryType,
+                  domRect: {
+                    x: domRect.x,
+                    y: domRect.y,
+                    width: domRect.width,
+                    height: domRect.height,
+                    top: domRect.top,
+                    right: domRect.right,
+                    bottom: domRect.bottom,
+                    left: domRect.left,
+                  },
+                })
+              );
             }, 300);
           }}
           onMouseLeave={() => {

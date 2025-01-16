@@ -12,7 +12,6 @@ export const moveSlotsReducer: CaseReducer<
     count: number;
   }>
 > = (state, action) => {
-  console.log('moveSlotsReducer', action.payload);
   const { fromSlot, fromType, toSlot, toType, count } = action.payload;
   const { sourceInventory, targetInventory } = getTargetInventory(state, fromType, toType);
   const pieceWeight = fromSlot.weight / fromSlot.count;
@@ -22,8 +21,6 @@ export const moveSlotsReducer: CaseReducer<
       ? sourceInventory.items[fromSlot.slot - 1]
       : sourceInventory.items[fromSlot.slot - 1];
 
-  console.log(action.payload);
-  console.log(targetInventory.id);
   if (fromType === InventoryType.PLAYER && toType === InventoryType.CLOTHING) {
     targetInventory.items[toSlot.slot - 1] = {
       ...fromItem,

@@ -24,25 +24,41 @@ const SlotTooltip: React.ForwardRefRenderFunction<
   const ammoName = itemData?.ammoName && Items[itemData?.ammoName]?.label;
 
   return (
-    <>
+    <div>
       {!itemData ? (
-        <div className="tooltip-wrapper" ref={ref} style={style}>
-          <div className="tooltip-header-wrapper">
-            <p>{item.name}</p>
-          </div>
+        <div className="bg-secondary rounded-md p-2 min-w-[200px]  border-1 border-white/50 " ref={ref} style={style}>
+          <Text fontFamily="Roboto" rFontSize={16} color="white" textTransform="uppercase">
+            {item.name}
+          </Text>
           <Divider />
         </div>
       ) : (
-        <div style={{ ...style }} className="tooltip-wrapper" ref={ref}>
-          <div className="tooltip-header-wrapper">
-            <p>{item.metadata?.label || itemData.label || item.name}</p>
+        <div
+          style={{ ...style }}
+          className="bg-secondary rounded-md p-2 min-w-[200px]  border-1 border-white/50 text-white"
+          ref={ref}
+        >
+          <div className="tooltip-header-wrapper text-white">
+            {itemData.rarity ? (
+              <Text fontFamily="Roboto" rFontSize={16} color={RarityColors[itemData.rarity]} textTransform="uppercase">
+                {item.metadata?.label || itemData.label || item.name}
+              </Text>
+            ) : (
+              <Text fontFamily="Roboto" rFontSize={16} color="white">
+                {item.metadata?.label || itemData.label || item.name}
+              </Text>
+            )}
             {inventoryType === 'crafting' ? (
               <div className="tooltip-crafting-duration">
                 <ClockIcon />
-                <p>{(item.duration !== undefined ? item.duration : 3000) / 1000}s</p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
+                  {(item.duration !== undefined ? item.duration : 3000) / 1000}s
+                </Text>
               </div>
             ) : (
-              <p>{item.metadata?.type}</p>
+              <Text fontFamily="Roboto" rFontSize={12} color="white">
+                {item.metadata?.type}
+              </Text>
             )}
           </div>
 
@@ -55,44 +71,44 @@ const SlotTooltip: React.ForwardRefRenderFunction<
           {inventoryType !== 'crafting' ? (
             <>
               {item.durability !== undefined && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ui_durability}: {Math.trunc(item.durability)}
-                </p>
+                </Text>
               )}
               {item.metadata?.ammo !== undefined && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ui_ammo}: {item.metadata.ammo}
-                </p>
+                </Text>
               )}
               {ammoName && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ammo_type}: {ammoName}
-                </p>
+                </Text>
               )}
               {item.metadata?.serial && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ui_serial}: {item.metadata.serial}
-                </p>
+                </Text>
               )}
               {item.metadata?.components && item.metadata?.components[0] && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ui_components}:{' '}
                   {(item.metadata?.components).map((component: string, index: number, array: []) =>
                     index + 1 === array.length ? Items[component]?.label : Items[component]?.label + ', '
                   )}
-                </p>
+                </Text>
               )}
               {item.metadata?.weapontint && (
-                <p>
+                <Text fontFamily="Roboto" rFontSize={12} color="white">
                   {Locale.ui_tint}: {item.metadata.weapontint}
-                </p>
+                </Text>
               )}
               {additionalMetadata.map((data: { metadata: string; value: string }, index: number) => (
                 <Fragment key={`metadata-${index}`}>
                   {item.metadata && item.metadata[data.metadata] && (
-                    <p>
+                    <Text fontFamily="Roboto" rFontSize={12} color="white">
                       {data.value}: {item.metadata[data.metadata]}
-                    </p>
+                    </Text>
                   )}
                 </Fragment>
               ))}
@@ -105,13 +121,13 @@ const SlotTooltip: React.ForwardRefRenderFunction<
                   return (
                     <div className="tooltip-ingredient" key={`ingredient-${item}`}>
                       <img src={item ? getItemUrl(item) : 'none'} alt="item-image" />
-                      <p>
+                      <Text fontFamily="Roboto" rFontSize={12} color="white">
                         {count >= 1
                           ? `${count}x ${Items[item]?.label || item}`
                           : count === 0
                           ? `${Items[item]?.label || item}`
                           : count < 1 && `${count * 100}% ${Items[item]?.label || item}`}
-                      </p>
+                      </Text>
                     </div>
                   );
                 })}
@@ -119,7 +135,7 @@ const SlotTooltip: React.ForwardRefRenderFunction<
           )}
           <Divider />
           {itemData.rarity && (
-            <>
+            <div className="flex items-center justify-between">
               <Text
                 fontFamily="Roboto"
                 rFontSize={12}
@@ -132,16 +148,18 @@ const SlotTooltip: React.ForwardRefRenderFunction<
               <div className="w-5 relative h-2">
                 <ItemRarity item={item} />
               </div>
-            </>
+            </div>
           )}
-          <p>Trọng lượng: {item.weight}g</p>
+          <Text fontFamily="Roboto" rFontSize={12} color="white">
+            Trọng lượng: {item.weight}g
+          </Text>
           {item.metadata?.fishSize && <p>Kích cỡ: {item.metadata.fishSize} inch</p>}
           {/* {item.metadata?.fishQuality !== undefined && (
             <p>Chất lượng: {FishQualityLabels[item.metadata.fishQuality as IFishQuality]}</p>
           )} */}
         </div>
       )}
-    </>
+    </div>
   );
 };
 

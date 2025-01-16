@@ -55,9 +55,12 @@ local function canOpenInventory()
 		return shared.info('cannot open inventory', '(is busy)')
 	end
 
-	if PlayerData.dead or IsPedFatallyInjured(playerPed) then
-		return shared.info('cannot open inventory', '(fatal injury)')
+	if not refreshingClothing then
+		if PlayerData.dead or IsPedFatallyInjured(playerPed) then
+			return shared.info('cannot open inventory', '(fatal injury)')
+		end
 	end
+
 
 	if PlayerData.cuffed or IsPedCuffed(playerPed) then
 		return shared.info('cannot open inventory', '(cuffed)')
@@ -278,12 +281,17 @@ function client.openInventory(inv, data)
 	currentInventory = right or defaultInventory
 	left.items = PlayerData.inventory
 	left.groups = PlayerData.groups
-
+	local backpackInventory = nil
+	if left.backpack then
+		backpackInventory = left.backpack
+		left.backpack = nil
+	end
 	SendNUIMessage({
 		action = 'setupInventory',
 		data = {
 			leftInventory = left,
-			rightInventory = currentInventory
+			rightInventory = currentInventory,
+			backpackInventory = backpackInventory
 		}
 	})
 
@@ -924,8 +932,6 @@ exports('closeInventory', client.closeInventory)
 ---@param data updateSlot[]
 ---@param weight number
 local function updateInventory(data, weight)
-	print('updateInventory', json.encode(data), weight)
-
 	local changes = {}
 	---@type table<string, number>
 	local itemCount = {}
@@ -969,6 +975,13 @@ local function updateInventory(data, weight)
 	end
 	if hasUpdateClothing then
 		refreshPlayerClothing()
+		local backpackInventory = lib.callback.await("ox_inventory:getBackpackInventory", 400)
+		SendNUIMessage({
+			action = 'setupInventory',
+			data = {
+				backpackInventory = backpackInventory
+			}
+		})
 	end
 	SendNUIMessage({ action = 'refreshSlots', data = { items = data, itemCount = itemCount } })
 
@@ -1212,7 +1225,6 @@ end)
 
 RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inventory, weight, player, clothes)
 	if source == '' then return end
-	print("ox_inventory:setPlayerInventory", json.encode(clothes))
 	---@class PlayerData
 	---@field inventory table<number, SlotWithItem?>
 	---@field weight number
@@ -1252,7 +1264,8 @@ RegisterNetEvent('ox_inventory:setPlayerInventory', function(currentDrops, inven
 			description = v.description,
 			buttons = buttons,
 			ammoName = v.ammoname,
-			image = v.client?.image
+			image = v.client?.image,
+			rarity = v.rarity or 'common',
 		}
 	end
 

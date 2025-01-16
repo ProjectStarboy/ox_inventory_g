@@ -16,13 +16,13 @@ export default {
       body: ['Roboto', 'sans-serif'],
       jaro: ['Jaro', 'sans-serif'],
     },
-    textColor: {
+    /* textColor: {
       primary: '#fe4655',
       secondary: '#1d1d1e',
       success: '#10b981',
       warning: '#f5a524',
       danger: '#fe4655',
-    },
+    }, */
     backgroundColor: {
       primary: '#fe4655',
       secondary: '#1d1d1e',

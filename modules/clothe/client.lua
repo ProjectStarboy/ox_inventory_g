@@ -110,9 +110,11 @@ local function getDefaultProps()
   }
 end
 
+refreshingClothing = false
 
 function refreshPlayerClothing(updatePed)
   if not PlayerData.clothing then return end
+  refreshingClothing = true
   local clothing = PlayerData.clothing
   --[[ local appearance = lib.callback.await("illenium-appearance:server:getAppearance", false)
   if not appearance then return end ]]
@@ -148,15 +150,13 @@ function refreshPlayerClothing(updatePed)
         end
       end
     end
-    print('components', json.encode(components))
-    --[[ exports['illenium-appearance']:setPedComponents(PlayerPedId(), components)
-    exports['illenium-appearance']:setPedProps(PlayerPedId(), props) ]]
-    local appearance = exports['illenium-appearance']:getPedAppearance(PlayerPedId())
+    local appearance = lib.callback.await("illenium-appearance:server:getAppearance", false)
+    if not appearance then return end
     appearance.components = components
     appearance.props = props
-    print('appearance', json.encode(appearance))
     exports['illenium-appearance']:setPlayerAppearance(appearance)
     TriggerServerEvent("illenium-appearance:server:saveAppearance", appearance)
+    refreshingClothing = false
     return
   end
 
@@ -223,11 +223,11 @@ function refreshPlayerClothing(updatePed)
     action = 'setOpenedSlot',
     data = openedSlot
   })
+  refreshingClothing = false
 end
 
 AddEventHandler("ox_inventory:onPlayerCreated", refreshPlayerClothing)
 exports('refreshPlayerClothing', refreshPlayerClothing)
-print('clothe/client.lua loaded')
 RegisterNUICallback("screenshot:stopScreenShot", function(body, resultCallback)
   resultCallback("ok")
   refreshPlayerClothing()

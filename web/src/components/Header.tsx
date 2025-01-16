@@ -12,7 +12,6 @@ function Header() {
     () => (leftInventory.maxWeight !== undefined ? Math.floor(getTotalWeight(leftInventory.items) * 1000) / 1000 : 0),
     [leftInventory.maxWeight, leftInventory.items]
   );
-  console.log(leftInventory.maxWeight);
   if (!leftInventory.maxWeight) return null;
   return (
     <div className=" bg-opacity-20 flex justify-center items-center px-16 py-8 gap-11">
@@ -42,7 +41,7 @@ function Header() {
           opacity={0.7}
           className="text-nowrap"
         >
-          CÂN NẶNG BALO
+          CÂN NẶNG
         </Text>
         <PlayerWeightProgress />
         <Text fontFamily="Roboto" rFontSize={14} rLineHeight={18}>

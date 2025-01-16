@@ -17,6 +17,13 @@ const initialState: State = {
     maxWeight: 0,
     items: [],
   },
+  backpackInventory: {
+    id: '',
+    type: InventoryType.BACKPACK,
+    slots: 0,
+    maxWeight: 0,
+    items: [],
+  },
   rightInventory: {
     id: '',
     type: '',
@@ -115,5 +122,6 @@ export const selectItemAmount = (state: RootState) => state.inventory.itemAmount
 export const selectIsBusy = (state: RootState) => state.inventory.isBusy;
 export const selectShowClothing = (state: RootState) => state.inventory.showClothing;
 export const selectClothing = (state: RootState) => state.inventory.clothing;
+export const selectBackpackInventory = (state: RootState) => state.inventory.backpackInventory;
 
 export default inventorySlice.reducer;

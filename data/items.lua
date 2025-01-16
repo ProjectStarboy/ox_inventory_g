@@ -70,7 +70,10 @@ return {
 
 	['burger'] = {
 		label = 'Burger',
+		rarity = 'godlike',
 		weight = 220,
+		degrade = 1,
+		decay = true,
 		client = {
 			status = { hunger = 200000 },
 			anim = 'eating',
@@ -206,6 +209,10 @@ return {
 
 	['clothing'] = {
 		label = 'Clothing',
+		consume = 0,
+	},
+	['backpack'] = {
+		label = 'Ba lô',
 		consume = 0,
 	},
 
